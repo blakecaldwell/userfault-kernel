@@ -1959,6 +1959,7 @@ int split_huge_page_to_list(struct page *page, struct list_head *list)
 {
 	struct anon_vma *anon_vma;
 	int ret = 1;
+	struct address_space *mapping;
 
 	BUG_ON(is_huge_zero_page(page));
 	BUG_ON(!PageAnon(page));
@@ -1970,10 +1971,24 @@ int split_huge_page_to_list(struct page *page, struct list_head *list)
 	 * page_lock_anon_vma_read except the write lock is taken to serialise
 	 * against parallel split or collapse operations.
 	 */
-	anon_vma = page_get_anon_vma(page);
-	if (!anon_vma)
-		goto out;
-	anon_vma_lock_write(anon_vma);
+	for (;;) {
+		mapping = ACCESS_ONCE(page->mapping);
+		anon_vma = page_get_anon_vma(page);
+		if (!anon_vma)
+			goto out;
+		anon_vma_lock_write(anon_vma);
+		/*
+		 * We don't hold the page lock here so
+		 * remap_pages_huge_pmd can change the anon_vma from
+		 * under us until we obtain the anon_vma lock. Verify
+		 * that we obtained the anon_vma lock before
+		 * remap_pages did.
+		 */
+		if (likely(mapping == ACCESS_ONCE(page->mapping)))
+			break;
+		anon_vma_unlock_write(anon_vma);
+		put_anon_vma(anon_vma);
+	}
 
 	ret = 0;
 	if (!PageCompound(page))
