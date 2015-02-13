@@ -997,6 +997,8 @@ static void collapse_huge_page(struct mm_struct *mm,
 	 * Prevent all access to pagetables with the exception of
 	 * gup_fast later handled by the ptep_clear_flush and the VM
 	 * handled by the anon_vma lock + PG_lock.
+	 *
+	 * remap_pages is prevented to race as well thanks to the mmap_sem.
 	 */
 	down_write(&mm->mmap_sem);
 	result = hugepage_vma_revalidate(mm, address, &vma);
