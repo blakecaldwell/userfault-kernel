@@ -179,6 +179,9 @@ struct uffdio_remap {
 #define UFFDIO_REMAP_MODE_DONTWAKE		((__u64)1<<0)
 #define UFFDIO_REMAP_MODE_ALLOW_SRC_HOLES	((__u64)1<<1)
 	__u64 mode;
+#define UFFDIO_REMAP_DIRECTION_OUT              ((__u64)1<<0)
+#define UFFDIO_REMAP_DIRECTION_IN               ((__u64)1<<1)
+	__u64 direction;
 
 	/*
 	 * "remap" is written by the ioctl and must be at the end: the
