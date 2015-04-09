@@ -310,7 +310,19 @@ int handle_userfault(struct vm_area_struct *vma, unsigned long address,
 			dump_stack();
 		}
 #endif
+		/*
+		 * Don't return SIGBUS when missing FAULT_FLAG_ALLOW_RETRY
+		 *
+		 * As noted above in commit message for userfaultfd
+		 * it may be the case that a fault comes in without
+		 * FAULT_FLAG_ALLOW_RETRY and with FAULT_FLAG_TRIES
+		 * set. This would cause an erroneuos SIGBUS for the
+		 * use case of a real application using userfault
+		 * backed areas (e.g. qemu). Letting fault proceed.
+
 		goto out;
+
+		 */
 	}
 
 	/*
