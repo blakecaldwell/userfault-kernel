@@ -1962,7 +1962,6 @@ int remap_pages_huge_pmd(struct mm_struct *dst_mm,
 	src_ptl = pmd_lockptr(src_mm, src_pmd);
 
 	BUG_ON(!pmd_trans_huge(src_pmdval));
-	BUG_ON(pmd_trans_splitting(src_pmdval));
 	BUG_ON(!pmd_none(dst_pmdval));
 	BUG_ON(!spin_is_locked(src_ptl));
 	BUG_ON(!rwsem_is_locked(&src_mm->mmap_sem));
@@ -2021,10 +2020,10 @@ int remap_pages_huge_pmd(struct mm_struct *dst_mm,
 	put_page(src_page);
 
 	dst_anon_vma = (void *) dst_vma->anon_vma + PAGE_MAPPING_ANON;
-	ACCESS_ONCE(src_page->mapping) = (struct address_space *) dst_anon_vma;
-	ACCESS_ONCE(src_page->index) = linear_page_index(dst_vma, dst_addr);
+	WRITE_ONCE(src_page->mapping, (struct address_space *) dst_anon_vma);
+	WRITE_ONCE(src_page->index, linear_page_index(dst_vma, dst_addr));
 
-	if (!pmd_same(pmdp_clear_flush(src_vma, src_addr, src_pmd),
+	if (!pmd_same(pmdp_huge_clear_flush(src_vma, src_addr, src_pmd),
 		      src_pmdval))
 		BUG();
 	_dst_pmd = mk_huge_pmd(src_page, dst_vma->vm_page_prot);
@@ -2742,7 +2741,7 @@ int split_huge_page_to_list(struct page *page, struct list_head *list)
 		 * operations.
 		 */
 		for (;;) {
-			mapping = ACCESS_ONCE(page->mapping);
+			mapping = READ_ONCE(page->mapping);
 			anon_vma = page_get_anon_vma(page);
 			if (!anon_vma) {
 				ret = -EBUSY;
@@ -2756,7 +2755,7 @@ int split_huge_page_to_list(struct page *page, struct list_head *list)
 			 * that we obtained the anon_vma lock before
 			 * remap_pages did.
 			 */
-			if (likely(mapping == ACCESS_ONCE(page->mapping)))
+			if (likely(mapping == READ_ONCE(page->mapping)))
 				break;
 			anon_vma_unlock_write(anon_vma);
 			put_anon_vma(anon_vma);

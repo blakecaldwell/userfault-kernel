@@ -549,7 +549,7 @@ repeat:
 	anon_vma_lock_read(anon_vma);
 
 	/* check if remap_anon_pages changed the anon_vma */
-	if (unlikely((unsigned long) ACCESS_ONCE(page->mapping) != anon_mapping)) {
+	if (unlikely((unsigned long) READ_ONCE(page->mapping) != anon_mapping)) {
 		anon_vma_unlock_read(anon_vma);
 		put_anon_vma(anon_vma);
 		anon_vma = NULL;

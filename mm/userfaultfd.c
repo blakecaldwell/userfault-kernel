@@ -701,10 +701,10 @@ static int remap_pages_pte(struct mm_struct *dst_mm,
 		put_page(src_page);
 
 		dst_anon_vma = (void *) dst_vma->anon_vma + PAGE_MAPPING_ANON;
-		ACCESS_ONCE(src_page->mapping) = ((struct address_space *)
-						  dst_anon_vma);
-		ACCESS_ONCE(src_page->index) = linear_page_index(dst_vma,
-								 dst_addr);
+		WRITE_ONCE(src_page->mapping,
+			   (struct address_space *) dst_anon_vma);
+		WRITE_ONCE(src_page->index,
+			   linear_page_index(dst_vma, dst_addr));
 
 		if (!pte_same(ptep_clear_flush(src_vma, src_addr, src_pte),
 			      orig_src_pte))
@@ -729,7 +729,8 @@ static int remap_pages_pte(struct mm_struct *dst_mm,
 		/* unblock rmap walks */
 		unlock_page(src_page);
 
-		mmu_notifier_invalidate_page(src_mm, src_addr);
+		mmu_notifier_invalidate_range(src_mm, src_addr,
+					      src_addr + PAGE_SIZE);
 	} else {
 		entry = pte_to_swp_entry(orig_src_pte);
 		if (non_swap_entry(entry)) {
@@ -974,7 +975,8 @@ ssize_t remap_pages(struct mm_struct *dst_mm, struct mm_struct *src_mm,
 			err = -EEXIST;
 			break;
 		}
-		if (pmd_trans_huge_lock(src_pmd, src_vma, &ptl) == 1) {
+		ptl = pmd_trans_huge_lock(src_pmd, src_vma);
+		if (ptl) {
 			/*
 			 * Check if we can move the pmd without
 			 * splitting it. First check the address
@@ -992,8 +994,8 @@ ssize_t remap_pages(struct mm_struct *dst_mm, struct mm_struct *src_mm,
 			    src_start + len - src_addr < HPAGE_PMD_SIZE) {
 				spin_unlock(ptl);
 				/* Fall through */
-				split_huge_page_pmd(src_vma, src_addr,
-						    src_pmd);
+				split_huge_pmd(src_vma, src_pmd,
+						    src_addr);
 			} else {
 				BUG_ON(dst_addr & ~HPAGE_PMD_MASK);
 				err = remap_pages_huge_pmd(dst_mm,
@@ -1029,8 +1031,8 @@ ssize_t remap_pages(struct mm_struct *dst_mm, struct mm_struct *src_mm,
 				err = -ENOENT;
 				break;
 			} else {
-				if (unlikely(__pte_alloc(src_mm, src_vma,
-							 src_pmd, src_addr))) {
+				if (unlikely(__pte_alloc(src_mm, src_pmd,
+							 src_addr))) {
 					err = -ENOMEM;
 					break;
 				}
@@ -1049,8 +1051,7 @@ ssize_t remap_pages(struct mm_struct *dst_mm, struct mm_struct *src_mm,
 		}
 
 		if (unlikely(pmd_none(dst_pmdval)) &&
-		    unlikely(__pte_alloc(dst_mm, dst_vma, dst_pmd,
-					 dst_addr))) {
+		    unlikely(__pte_alloc(dst_mm, dst_pmd, dst_addr))) {
 			err = -ENOMEM;
 			break;
 		}
