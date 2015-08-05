@@ -1679,7 +1679,7 @@ int remap_pages_huge_pmd(struct mm_struct *dst_mm,
 	ACCESS_ONCE(src_page->mapping) = (struct address_space *) dst_anon_vma;
 	ACCESS_ONCE(src_page->index) = linear_page_index(dst_vma, dst_addr);
 
-	if (!pmd_same(pmdp_clear_flush(src_vma, src_addr, src_pmd),
+	if (!pmd_same(pmdp_huge_clear_flush(src_vma, src_addr, src_pmd),
 		      src_pmdval))
 		BUG();
 	_dst_pmd = mk_huge_pmd(src_page, dst_vma->vm_page_prot);
