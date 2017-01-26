@@ -1785,7 +1785,6 @@ int remap_pages_huge_pmd(struct mm_struct *dst_mm,
 	src_ptl = pmd_lockptr(src_mm, src_pmd);
 
 	BUG_ON(!pmd_trans_huge(src_pmdval));
-	BUG_ON(pmd_trans_splitting(src_pmdval));
 	BUG_ON(!pmd_none(dst_pmdval));
 	BUG_ON(!spin_is_locked(src_ptl));
 	BUG_ON(!rwsem_is_locked(&src_mm->mmap_sem));
