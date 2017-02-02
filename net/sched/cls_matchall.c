@@ -171,13 +171,9 @@ static int mall_change(struct net *net, struct sk_buff *in_skb,
 	if (!new)
 		return -ENOBUFS;
 
-<<<<<<< HEAD
-	tcf_exts_init(&new->exts, TCA_MATCHALL_ACT, 0);
-=======
-	err = tcf_exts_init(&f->exts, TCA_MATCHALL_ACT, 0);
+	err = tcf_exts_init(&new->exts, TCA_MATCHALL_ACT, 0);
 	if (err)
 		goto err_exts_init;
->>>>>>> linux-next/akpm-base
 
 	if (!handle)
 		handle = 1;
@@ -204,16 +200,11 @@ static int mall_change(struct net *net, struct sk_buff *in_skb,
 		call_rcu(&head->rcu, mall_destroy_rcu);
 	return 0;
 
-<<<<<<< HEAD
-errout:
-	kfree(new);
-=======
 err_replace_hw_filter:
 err_set_parms:
-	tcf_exts_destroy(&f->exts);
+	tcf_exts_destroy(&new->exts);
 err_exts_init:
-	kfree(f);
->>>>>>> linux-next/akpm-base
+	kfree(new);
 	return err;
 }
 

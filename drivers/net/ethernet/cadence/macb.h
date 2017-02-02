@@ -955,11 +955,8 @@ struct macb {
 #ifdef CONFIG_ARCH_DMA_ADDR_T_64BIT
 	enum macb_hw_dma_cap hw_dma_cap;
 #endif
-<<<<<<< HEAD
-=======
 
 	struct macb_ptp_info	*ptp_info;	/* macb-ptp interface */
->>>>>>> linux-next/akpm-base
 };
 
 static inline bool macb_is_gem(struct macb *bp)
