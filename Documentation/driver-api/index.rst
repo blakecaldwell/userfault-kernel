@@ -21,6 +21,7 @@ available subsections can be seen below.
    message-based
    sound
    frame-buffer
+   iio/index
    input
    usb
    spi
@@ -30,6 +31,8 @@ available subsections can be seen below.
    miscellaneous
    vme
    80211/index
+   firmware/index
+   uio-howto
 
 .. only::  subproject and html
 

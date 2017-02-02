@@ -116,6 +116,7 @@
  */
 #define __pure			__attribute__((pure))
 #define __aligned(x)		__attribute__((aligned(x)))
+#define __aligned_largest	__attribute__((aligned))
 #define __printf(a, b)		__attribute__((format(printf, a, b)))
 #define __scanf(a, b)		__attribute__((format(scanf, a, b)))
 #define __attribute_const__	__attribute__((__const__))
@@ -194,6 +195,28 @@
 #ifdef LATENT_ENTROPY_PLUGIN
 #define __latent_entropy __attribute__((latent_entropy))
 #endif
+#endif
+
+/*
+ * The initify gcc-plugin attempts to identify const arguments that are only
+ * used during init (see __init and __exit), so they can be moved to the
+ * .init.rodata/.exit.rodata section. If an argument is passed to a non-init
+ * function, it must normally be assumed that such an argument has been
+ * captured by that function and may be used in the future when .init/.exit has
+ * been unmapped from memory. In order to identify functions that are confirmed
+ * to not capture their arguments, the __nocapture() attribute is used so that
+ * initify can better identify candidate variables.
+ *
+ * Arguments marked in this way are verified by the plugin, but sometimes
+ * code complexity and other limitiations will cause initify to not be able
+ * to check it correctly. For these cases, the __unverified_nocapture
+ * attribute can be added to disable this checking, overriding the plugin
+ * logic for cases that have been manually verified. This should not need
+ * to be used very often.
+ */
+#ifdef INITIFY_PLUGIN
+#define __nocapture(...) __attribute__((nocapture(__VA_ARGS__)))
+#define __unverified_nocapture(...) __attribute__((unverified_nocapture(__VA_ARGS__)))
 #endif
 
 /*

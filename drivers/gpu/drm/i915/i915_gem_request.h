@@ -170,17 +170,6 @@ struct drm_i915_gem_request {
 	/** Preallocate space in the ring for the emitting the request */
 	u32 reserved_space;
 
-	/**
-	 * Context related to the previous request.
-	 * As the contexts are accessed by the hardware until the switch is
-	 * completed to a new context, the hardware may still be writing
-	 * to the context object after the breadcrumb is visible. We must
-	 * not unpin/unbind/prune that object whilst still active and so
-	 * we keep the previous context pinned until the following (this)
-	 * request is retired.
-	 */
-	struct i915_gem_context *previous_context;
-
 	/** Batch buffer related to this request if any (used for
 	 * error state dump only).
 	 */
@@ -504,7 +493,7 @@ static inline struct drm_i915_gem_request *
 __i915_gem_active_get_rcu(const struct i915_gem_active *active)
 {
 	/* Performing a lockless retrieval of the active request is super
-	 * tricky. SLAB_DESTROY_BY_RCU merely guarantees that the backing
+	 * tricky. SLAB_TYPESAFE_BY_RCU merely guarantees that the backing
 	 * slab of request objects will not be freed whilst we hold the
 	 * RCU read lock. It does not guarantee that the request itself
 	 * will not be freed and then *reused*. Viz,

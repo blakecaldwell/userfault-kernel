@@ -966,6 +966,12 @@
 			serial port must already be setup and configured.
 			Options are not yet supported.
 
+		lantiq,<addr>
+			Start an early, polled-mode console on a lantiq serial
+			(lqasc) port at the specified address. The serial port
+			must already be setup and configured. Options are not
+			yet supported.
+
 		lpuart,<addr>
 		lpuart32,<addr>
 			Use early console provided by Freescale LP UART driver
@@ -979,9 +985,10 @@
 			address. The serial port must already be setup
 			and configured. Options are not yet supported.
 
-	earlyprintk=	[X86,SH,BLACKFIN,ARM,M68k]
+	earlyprintk=	[X86,SH,BLACKFIN,ARM,M68k,S390]
 			earlyprintk=vga
 			earlyprintk=efi
+			earlyprintk=sclp
 			earlyprintk=xen
 			earlyprintk=serial[,ttySn[,baudrate]]
 			earlyprintk=serial[,0x...[,baudrate]]
@@ -1015,6 +1022,8 @@
 			the real console.
 
 			The xen output can only be used by Xen PV guests.
+
+			The sclp output can only be used on s390.
 
 	edac_report=	[HW,EDAC] Control how to report EDAC event
 			Format: {"on" | "off" | "force"}
@@ -3277,6 +3286,13 @@
 			only "lazy" RCU callbacks (RCU_FAST_NO_HZ=y).
 			Lazy RCU callbacks are those which RCU can
 			prove do nothing more than free memory.
+
+	rcutree.rcu_kick_kthreads= [KNL]
+			Cause the grace-period kthread to get an extra
+			wake_up() if it sleeps three times longer than
+			it should at force-quiescent-state time.
+			This wake_up() will be accompanied by a
+			WARN_ONCE() splat and an ftrace_dump().
 
 	rcuperf.gp_exp= [KNL]
 			Measure performance of expedited synchronous
