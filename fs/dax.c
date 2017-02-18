@@ -992,14 +992,14 @@ int __dax_zero_page_range(struct block_device *bdev, sector_t sector,
 }
 EXPORT_SYMBOL_GPL(__dax_zero_page_range);
 
-static sector_t dax_iomap_sector(struct iomap *iomap, loff_t pos)
+static sector_t dax_iomap_sector(const struct iomap *iomap, loff_t pos)
 {
 	return iomap->blkno + (((pos & PAGE_MASK) - iomap->offset) >> 9);
 }
 
 static loff_t
 dax_iomap_actor(struct inode *inode, loff_t pos, loff_t length, void *data,
-		struct iomap *iomap)
+		const struct iomap *iomap)
 {
 	struct iov_iter *iter = data;
 	loff_t end = pos + length, done = 0;
@@ -1118,7 +1118,8 @@ static int dax_fault_return(int error)
 	return VM_FAULT_SIGBUS;
 }
 
-static int dax_iomap_pte_fault(struct vm_fault *vmf, struct iomap_ops *ops)
+static int dax_iomap_pte_fault(struct vm_fault *vmf,
+			       const struct iomap_ops *ops)
 {
 	struct address_space *mapping = vmf->vma->vm_file->f_mapping;
 	struct inode *inode = mapping->host;
@@ -1325,7 +1326,8 @@ fallback:
 	return VM_FAULT_FALLBACK;
 }
 
-static int dax_iomap_pmd_fault(struct vm_fault *vmf, struct iomap_ops *ops)
+static int dax_iomap_pmd_fault(struct vm_fault *vmf,
+			       const struct iomap_ops *ops)
 {
 	struct vm_area_struct *vma = vmf->vma;
 	struct address_space *mapping = vma->vm_file->f_mapping;
@@ -1434,7 +1436,8 @@ out:
 	return result;
 }
 #else
-static int dax_iomap_pmd_fault(struct vm_fault *vmf, struct iomap_ops *ops)
+static int dax_iomap_pmd_fault(struct vm_fault *vmf,
+			       const struct iomap_ops *ops)
 {
 	return VM_FAULT_FALLBACK;
 }
@@ -1451,7 +1454,7 @@ static int dax_iomap_pmd_fault(struct vm_fault *vmf, struct iomap_ops *ops)
  * successfully.
  */
 int dax_iomap_fault(struct vm_fault *vmf, enum page_entry_size pe_size,
-		struct iomap_ops *ops)
+		const struct iomap_ops *ops)
 {
 	switch (pe_size) {
 	case PE_SIZE_PTE:

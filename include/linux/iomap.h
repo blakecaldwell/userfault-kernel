@@ -72,16 +72,16 @@ struct iomap_ops {
 };
 
 ssize_t iomap_file_buffered_write(struct kiocb *iocb, struct iov_iter *from,
-		struct iomap_ops *ops);
+		const struct iomap_ops *ops);
 int iomap_file_dirty(struct inode *inode, loff_t pos, loff_t len,
-		struct iomap_ops *ops);
+		const struct iomap_ops *ops);
 int iomap_zero_range(struct inode *inode, loff_t pos, loff_t len,
-		bool *did_zero, struct iomap_ops *ops);
+		bool *did_zero, const struct iomap_ops *ops);
 int iomap_truncate_page(struct inode *inode, loff_t pos, bool *did_zero,
-		struct iomap_ops *ops);
-int iomap_page_mkwrite(struct vm_fault *vmf, struct iomap_ops *ops);
+		const struct iomap_ops *ops);
+int iomap_page_mkwrite(struct vm_fault *vmf, const struct iomap_ops *ops);
 int iomap_fiemap(struct inode *inode, struct fiemap_extent_info *fieinfo,
-		loff_t start, loff_t len, struct iomap_ops *ops);
+		loff_t start, loff_t len, const struct iomap_ops *ops);
 
 /*
  * Flags for direct I/O ->end_io:
