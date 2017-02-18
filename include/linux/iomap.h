@@ -91,6 +91,6 @@ int iomap_fiemap(struct inode *inode, struct fiemap_extent_info *fieinfo,
 typedef int (iomap_dio_end_io_t)(struct kiocb *iocb, ssize_t ret,
 		unsigned flags);
 ssize_t iomap_dio_rw(struct kiocb *iocb, struct iov_iter *iter,
-		struct iomap_ops *ops, iomap_dio_end_io_t end_io);
+		const struct iomap_ops *ops, iomap_dio_end_io_t end_io);
 
 #endif /* LINUX_IOMAP_H */
