@@ -108,6 +108,16 @@ UFFDIO_COPY. They're atomic as in guaranteeing that nothing can see an
 half copied page since it'll keep userfaulting until the copy has
 finished.
 
+To move pages out of a userfault registered region and into a user vma
+the UFFDIO_REMAP ioctl can be used. This is only possible for the
+"OUT" direction. For the "IN" direction, UFFDIO_COPY is preferred
+since UFFDIO_REMAP requires a TLB flush on the source range at a
+greater penalty than copying the page. With
+UFFDIO_REGISTER_MODE_MISSING set, subsequent accesses to the same
+region will generate a page fault event. This allows non-cooperative
+removal of memory in a userfaultfd registered vma, effectively
+limiting the amount of resident memory in such a region.
+
 QEMU/KVM
 ========
 
