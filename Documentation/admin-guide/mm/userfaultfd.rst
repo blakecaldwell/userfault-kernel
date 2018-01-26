@@ -159,6 +159,20 @@ UFFD_PAGEFAULT_FLAG_WRITE.  The latter did not fail on protection but
 you still need to supply a page when UFFDIO_REGISTER_MODE_MISSING was
 used.
 
+For the case of UFFDIO_REMAP, two modes of operation are possible,
+with either UFFDIO_REMAP_MODE_DIRECTION_IN flag set or cleared. For
+the "IN" direction, UFFDIO_COPY is preferred over UFFDIO_REMAP to
+copy memory from a user vma to the userfaultfd registered range,
+because a UFFDIO_REMAP requires a TLB flush on the source range at a
+greater penalty than copying the page. This can be overridden by
+setting uffdio_remap.mode & UFFDIO_REMAP_MODE_DIRECTION_IN.
+Alternatively, UFFDIO_REMAP can remove memory from the userfaultfd
+registered range and return it to a user region. With
+UFFDIO_REGISTER_MODE_MISSING set, subsequent accesses to the same
+region will generate a page fault event. This allows non-cooperative
+removal (or eviction) of memory in a userfaultfd registered vma,
+effectively limiting the amount of resident memory in such a region.
+
 QEMU/KVM
 ========
 
