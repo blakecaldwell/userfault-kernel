@@ -1757,6 +1757,7 @@ static int userfaultfd_remap(struct userfaultfd_ctx *ctx,
 	struct uffdio_remap uffdio_remap;
 	struct uffdio_remap __user *user_uffdio_remap;
 	struct userfaultfd_wake_range range;
+	struct mm_struct *src_mm, *dst_mm;
 
 	user_uffdio_remap = (struct uffdio_remap __user *) arg;
 
@@ -1765,19 +1766,28 @@ static int userfaultfd_remap(struct userfaultfd_ctx *ctx,
 			   /* don't copy "remap" last field */
 			   sizeof(uffdio_remap)-sizeof(__s64)))
 		goto out;
+		if (uffdio_remap.mode & UFFDIO_REMAP_MODE_DIRECTION_IN) {
+			src_mm = current->mm;
+			dst_mm = ctx->mm;
+		}
+		else {
+			src_mm = ctx->mm;
+			dst_mm = current->mm;
+		}
 
-	ret = validate_range(ctx->mm, uffdio_remap.dst, uffdio_remap.len);
+	ret = validate_range(dst_mm, uffdio_remap.dst, uffdio_remap.len);
 	if (ret)
 		goto out;
-	ret = validate_range(current->mm, uffdio_remap.src, uffdio_remap.len);
+	ret = validate_range(src_mm, uffdio_remap.src, uffdio_remap.len);
 	if (ret)
 		goto out;
 	ret = -EINVAL;
 	if (uffdio_remap.mode & ~(UFFDIO_REMAP_MODE_ALLOW_SRC_HOLES|
-				  UFFDIO_REMAP_MODE_DONTWAKE))
+				  UFFDIO_REMAP_MODE_DONTWAKE|
+				  UFFDIO_REMAP_MODE_DIRECTION_IN))
 		goto out;
 
-	ret = remap_pages(ctx->mm, current->mm,
+	ret = remap_pages(dst_mm, src_mm,
 			  uffdio_remap.dst, uffdio_remap.src,
 			  uffdio_remap.len, uffdio_remap.mode);
 	if (unlikely(put_user(ret, &user_uffdio_remap->remap)))
