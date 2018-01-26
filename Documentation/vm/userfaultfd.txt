@@ -101,6 +101,17 @@ UFFDIO_COPY. They're atomic as in guaranteeing that nothing can see an
 half copied page since it'll keep userfaulting until the copy has
 finished.
 
+For the case of UFFDIO_REMAP, two modes of operation are possible,
+controlled by the UFFDIO_REMAP_MODE_DIRECTION_IN flag. One behavior is
+to copy a page from an anonymous vma to the userfaultfd registered
+range, differing from UFFDIO_COPY in that the page contents are
+untouched. Alternatively, UFFDIO_REMAP can remove the page from the
+userfaultfd registered range and place it an anonymous VM. With
+UFFDIO_REGISTER_MODE_MISSING set, subsequent accesses to the same page
+will generate a page fault event. The default behavior is the second
+use case, because it is preferable to use UFFDIO_COPY for moving a page
+in. Setting UFFDIO_REMAP_MODE_DIRECTION_IN enables the first use case.
+
 == QEMU/KVM ==
 
 QEMU/KVM is using the userfaultfd syscall to implement postcopy live
