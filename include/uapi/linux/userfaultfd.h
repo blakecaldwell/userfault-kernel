@@ -245,7 +245,12 @@ struct uffdio_remap {
 	 */
 #define UFFDIO_REMAP_MODE_DONTWAKE		((__u64)1<<0)
 #define UFFDIO_REMAP_MODE_ALLOW_SRC_HOLES	((__u64)1<<1)
-	__u64 mode;
+	/*
+	 * Default is direction out as it's preferable to use UFFDIO_COPY
+	 * for direction in.
+	 */
+#define UFFDIO_REMAP_MODE_DIRECTION_IN		((__u64)1<<2)
+	 __u64 mode;
 
 	/*
 	 * "remap" is written by the ioctl and must be at the end: the
