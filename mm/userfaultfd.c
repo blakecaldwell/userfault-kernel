@@ -693,6 +693,7 @@ static int remap_pages_pte(struct mm_struct *dst_mm,
 	swp_entry_t entry;
 	pte_t orig_src_pte, orig_dst_pte;
 	struct anon_vma *src_anon_vma, *dst_anon_vma;
+	struct mmu_notifier_range range;
 
 	spin_lock(dst_ptl);
 	orig_dst_pte = *dst_pte;
@@ -746,8 +747,9 @@ static int remap_pages_pte(struct mm_struct *dst_mm,
 			put_page(src_page);
 			return -EAGAIN;
 		}
-		mmu_notifier_invalidate_range_start(src_mm, src_addr,
-						    src_addr + PAGE_SIZE);
+		mmu_notifier_range_init(&range, src_mm, src_addr,
+					src_addr + PAGE_SIZE);
+		mmu_notifier_invalidate_range_start(&range);
 		anon_vma_lock_write(src_anon_vma);
 
 		double_pt_lock(dst_ptl, src_ptl);
@@ -791,8 +793,7 @@ static int remap_pages_pte(struct mm_struct *dst_mm,
 		double_pt_unlock(dst_ptl, src_ptl);
 
 		anon_vma_unlock_write(src_anon_vma);
-		mmu_notifier_invalidate_range_end(src_mm, src_addr,
-						  src_addr + PAGE_SIZE);
+		mmu_notifier_invalidate_range_end(&range);
 		put_anon_vma(src_anon_vma);
 
 		/* unblock rmap walks */
