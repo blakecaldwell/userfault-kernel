@@ -1101,8 +1101,8 @@ ssize_t remap_pages(struct mm_struct *dst_mm, struct mm_struct *src_mm,
 				err = -ENOENT;
 				break;
 			} else {
-				if (unlikely(__pte_alloc(src_mm, src_pmd,
-							 src_addr))) {
+				if (unlikely(__pte_alloc(src_mm,
+							 src_pmd))) {
 					err = -ENOMEM;
 					break;
 				}
@@ -1121,7 +1121,7 @@ ssize_t remap_pages(struct mm_struct *dst_mm, struct mm_struct *src_mm,
 		}
 
 		if (unlikely(pmd_none(dst_pmdval)) &&
-		    unlikely(__pte_alloc(dst_mm, dst_pmd, dst_addr))) {
+		    unlikely(__pte_alloc(dst_mm, dst_pmd))) {
 			err = -ENOMEM;
 			break;
 		}
