@@ -2002,6 +2002,7 @@ int remap_pages_huge_pmd(struct mm_struct *dst_mm,
 	pmd_t _dst_pmd, src_pmdval;
 	struct page *src_page;
 	struct anon_vma *src_anon_vma, *dst_anon_vma;
+	struct mmu_notifier_range range;
 	spinlock_t *src_ptl, *dst_ptl;
 	pgtable_t pgtable;
 
@@ -2025,8 +2026,9 @@ int remap_pages_huge_pmd(struct mm_struct *dst_mm,
 	get_page(src_page);
 	spin_unlock(src_ptl);
 
-	mmu_notifier_invalidate_range_start(src_mm, src_addr,
-					    src_addr + HPAGE_PMD_SIZE);
+	mmu_notifier_range_init(&range, src_mm, src_addr,
+				src_addr + HPAGE_PMD_SIZE);
+	mmu_notifier_invalidate_range_start(&range);
 
 	/* block all concurrent rmap walks */
 	lock_page(src_page);
@@ -2040,8 +2042,7 @@ int remap_pages_huge_pmd(struct mm_struct *dst_mm,
 	if (!src_anon_vma) {
 		unlock_page(src_page);
 		put_page(src_page);
-		mmu_notifier_invalidate_range_end(src_mm, src_addr,
-						  src_addr + HPAGE_PMD_SIZE);
+		mmu_notifier_invalidate_range_end(&range);
 		return -EAGAIN;
 	}
 	anon_vma_lock_write(src_anon_vma);
@@ -2056,8 +2057,7 @@ int remap_pages_huge_pmd(struct mm_struct *dst_mm,
 		put_anon_vma(src_anon_vma);
 		unlock_page(src_page);
 		put_page(src_page);
-		mmu_notifier_invalidate_range_end(src_mm, src_addr,
-						  src_addr + HPAGE_PMD_SIZE);
+		mmu_notifier_invalidate_range_end(&range);
 		return -EAGAIN;
 	}
 
@@ -2091,8 +2091,7 @@ int remap_pages_huge_pmd(struct mm_struct *dst_mm,
 	/* unblock rmap walks */
 	unlock_page(src_page);
 
-	mmu_notifier_invalidate_range_end(src_mm, src_addr,
-					  src_addr + HPAGE_PMD_SIZE);
+	mmu_notifier_invalidate_range_end(&range);
 	return 0;
 }
 #endif /* CONFIG_USERFAULTFD */
