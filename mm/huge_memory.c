@@ -2061,7 +2061,8 @@ int remap_pages_huge_pmd(struct mm_struct *dst_mm,
 	get_page(src_page);
 	spin_unlock(src_ptl);
 
-	mmu_notifier_range_init(&range, src_mm, src_addr,
+	mmu_notifier_range_init(&range, MMU_NOTIFY_CLEAR, 0, src_vma,
+                                src_mm, src_addr,
 				src_addr + HPAGE_PMD_SIZE);
 	mmu_notifier_invalidate_range_start(&range);
 
