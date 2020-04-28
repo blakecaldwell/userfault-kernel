@@ -747,7 +747,8 @@ static int remap_pages_pte(struct mm_struct *dst_mm,
 			put_page(src_page);
 			return -EAGAIN;
 		}
-		mmu_notifier_range_init(&range, src_mm, src_addr,
+		mmu_notifier_range_init(&range, MMU_NOTIFY_CLEAR, 0,
+					src_vma, src_mm, src_addr,
 					src_addr + PAGE_SIZE);
 		mmu_notifier_invalidate_range_start(&range);
 		anon_vma_lock_write(src_anon_vma);
